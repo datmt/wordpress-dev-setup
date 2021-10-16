@@ -1,0 +1,73 @@
+version: "3" 
+services:
+  wp_main:
+    container_name: wp_main
+    image: wordpress 
+    restart: always
+    volumes:
+      - ./wp_main/wp-content:/var/www/html/wp-content
+      - ./wp_main/wp-config.php:/var/www/html/wp-config.php
+    environment:
+      WORDPRESS_DB_HOST: 172.22.0.12
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: root 
+      WORDPRESS_DB_NAME: wp
+    networks:
+      local_net:
+        ipv4_address: 172.22.0.10
+  wp_test:
+    container_name: wp_test
+    restart: always
+    image: wordpress 
+    volumes:
+      - wp_test_vol:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: db_test
+      WORDPRESS_DB_USER: root
+      WORDPRESS_DB_PASSWORD: root
+      WORDPRESS_DB_NAME: wp
+    networks:
+      local_net:
+        ipv4_address: 172.22.0.11      
+  db_main:
+    image: mariadb:10.5.9
+    restart: always
+    container_name: db_main
+    volumes:
+      - db_main:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    networks:
+      local_net:
+        ipv4_address: 172.22.0.12  
+  db_test:
+    image: mariadb:10.5.9
+    restart: always
+    container_name: db_test
+    volumes:
+      - db_test:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    networks:
+      local_net:
+        ipv4_address: 172.22.0.13
+  router:
+    container_name: router
+    restart: always
+    image: haproxy:2.4-dev
+    networks:
+      local_net:    
+    ports:
+      - 80:80
+        #      - 443:443
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+        #      - ./ssl:/etc/ssl
+        #
+networks:
+  local_net:
+    external: true        
+volumes:
+  db_main:
+  db_test:
+  wp_test_vol:
